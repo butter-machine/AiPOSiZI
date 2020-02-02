@@ -1,19 +1,19 @@
 #!/usr/bin/python3
-from http.server import BaseHTTPRequestHandler, HTTPServer
+import http.server
+from http.server import BaseHTTPRequestHandler
+import socketserver
 import argparse
 
 
 parser = argparse.ArgumentParser(description='HTTP 1.1 server')
 
-PORT_NUMBER = 8080
+PORT = 8080
 
-class ServerHandler(HTTPServer):
-	def do_GET(self):
-		self.send_response(200)
-		self.send_header('Content-type','text/html')
-		self.end_headers()
-		self.wfile.write("Hello World !")
-		return
+class Handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b'Hello, world!')
 
 
 class Server():
@@ -25,16 +25,13 @@ class Server():
         self.pidfile_timeout = 5
 
     def run(self):
-        server = HTTPServer(('', PORT_NUMBER), ServerHandler)
-        
         try:
-            print('Serving at 8000')
-            server.serve_forever()
+            with socketserver.TCPServer(("", PORT), Handler) as httpd:
+                print("serving at port", PORT)
+                httpd.serve_forever()
         except KeyboardInterrupt:
-            pass
-
-        server.server_close()
-        print('\nServer closed')
+            httpd.shutdown()
+            print('\nServer shutted down')
 
 
 Server().run()
