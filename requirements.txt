@@ -1,4 +1,1 @@
-docutils==0.16
-lockfile==0.12.2
 pkg-resources==0.0.0
-python-daemon==2.2.4

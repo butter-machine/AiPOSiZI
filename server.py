@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import os.path
 import http.server
 from http.server import BaseHTTPRequestHandler
 import socketserver
@@ -15,18 +16,37 @@ parser.add_argument("-m", "--methods",
                     help="Access-Control-Allow-Methods default header",
                     action="store_true")
 
+logger = Logger('.log')                    
+
 args = parser.parse_args()
 PORT = args.port
-
-logger = Logger('.log')
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
-        self.send_response(200)
-        self.end_headers()
-        self.wfile.write(b'Hello, world!')
-        logger.log_response('GET', str(self.path), str(self.headers))
+        request_path = os.path.join(BASE_DIR, self.path[1:])
+        print(request_path, self.path, BASE_DIR)
+        if os.path.isfile(request_path):
+            self.send_response(200)
+            self.end_headers()
+            with open(request_path, 'rb') as file: 
+                self.wfile.write(file.read())
+            logger.log_response(
+                'GET',
+                str(200),
+                str(self.path),
+                str(self.headers)
+            )
+        else:
+            self.send_response(404)
+            self.end_headers()
+            logger.log_response(
+                'GET',
+                str(404),
+                str(self.path),
+                str(self.headers)
+            )
 
 
 class Server():

@@ -24,10 +24,12 @@ class Logger:
         self.port = 0
         logging.info(message)
 
-    def log_response(self, request_type: str, path: str, headers: str):
+    def log_response(self, request_type: str, response_code: str,
+                    path: str, headers: str):
         headers = headers.replace('\n', ' ')
-        message = "{} request\n\tPath: {}\n\t{}".format(
+        message = "{} request with {} code\n\tPath: {}\n\t{}".format(
             request_type,
+            response_code,
             path,
             headers
         )
