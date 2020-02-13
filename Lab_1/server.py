@@ -48,6 +48,9 @@ class Handler(BaseHTTPRequestHandler):
                 str(self.headers)
             )
 
+    def do_POST(self):
+        print(self.path)
+
 
 class Server():
     def __init__(self):
