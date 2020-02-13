@@ -19,6 +19,7 @@ parser.add_argument("-m", "--methods",
 logger = Logger('.log')                    
 
 args = parser.parse_args()
+
 PORT = args.port
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -28,7 +29,7 @@ class Handler(BaseHTTPRequestHandler):
         request_path = os.path.join(BASE_DIR, self.path[1:])
         print(request_path, self.path, BASE_DIR)
         if os.path.isfile(request_path):
-            self.send_response(200)
+            self.send_response(200, 'ok')
             self.end_headers()
             with open(request_path, 'rb') as file: 
                 self.wfile.write(file.read())
@@ -44,10 +45,57 @@ class Handler(BaseHTTPRequestHandler):
             logger.log_response(
                 'GET',
                 str(404),
+                str(self.headers),
                 str(self.path),
-                str(self.headers)
+                ''
             )
 
+    def do_POST(self):
+        try:
+            self.send_response(200, 'ok')
+            length = int(self.headers.get('content-length'))
+            body = self.rfile.read(length)
+            logger.log_response(
+                'POST',
+                str(200),
+                str(self.headers),
+                str(self.path),
+                str(body)
+            )
+            self.wfile.write(str(body))
+            self.wfile.close()
+        except:
+            self.send_response(500)
+        
+
+    def do_OPTIONS(self):
+        self.send_response(200, 'ok')
+
+        headers = []
+        if (args.origin):
+            self.send_header(
+                'Access-Control-Allow-Origin',
+                'http://localhost:' + str(PORT)
+            )
+            headers.append({'Access-Control-Allow-Origin': 'http://localhost:' + str(PORT)})
+
+        if (args.methods):
+            self.send_header(
+                'Access-Control-Allow-Methods',
+                'GET, POST, OPTIONS'
+            )
+            headers.append({'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'})
+
+        self.end_headers()
+        
+        logger.log_response(
+            'OPTIONS',
+            str(200),
+            str(headers),
+            str(self.path),
+            ''
+        )
+    
 
 class Server():
     def __init__(self):
@@ -59,7 +107,7 @@ class Server():
 
     def run(self):
         try:
-            with socketserver.TCPServer(("", PORT), Handler) as httpd:
+            with socketserver.TCPServer(('', PORT), Handler) as httpd:
                 print("Serving at port", PORT)
                 logger.log_start(PORT)
                 httpd.serve_forever()

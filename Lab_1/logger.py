@@ -25,12 +25,14 @@ class Logger:
         logging.info(message)
 
     def log_response(self, request_type: str, response_code: str,
-                    path: str, headers: str):
+                    headers: str, path: str, content: str):
         headers = headers.replace('\n', ' ')
-        message = "{} request with {} code\n\tPath: {}\n\t{}".format(
+        message = "{} request with {} response code\
+        \n\tHeaders: {}\n\tPath: {}\n\tContent: {}".format(
             request_type,
             response_code,
+            headers.replace('\n', ''),
             path,
-            headers
+            content
         )
         logging.info(message)
