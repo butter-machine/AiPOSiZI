@@ -23,21 +23,34 @@ args = parser.parse_args()
 PORT = args.port
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+def handle_errors(foo):
+    def inner(*args, **kwargs):
+        try:
+            foo(*args, **kwargs)
+        except Exception as e:
+            logger.log_error(str(e))
+
+    return inner
+    
 
 class Handler(BaseHTTPRequestHandler):
+    @handle_errors
     def do_GET(self):
+        aaaaaaaa
         request_path = os.path.join(BASE_DIR, self.path[1:])
         print(request_path, self.path, BASE_DIR)
         if os.path.isfile(request_path):
             self.send_response(200, 'ok')
             self.end_headers()
-            with open(request_path, 'rb') as file: 
-                self.wfile.write(file.read())
+            with open(request_path, 'rb') as file:
+                content = file.read()
+                self.wfile.write(content)
             logger.log_response(
                 'GET',
-                str(200),
+                str(404),
+                str(self.headers),
                 str(self.path),
-                str(self.headers)
+                str(content)
             )
         else:
             self.send_response(404)
@@ -50,6 +63,7 @@ class Handler(BaseHTTPRequestHandler):
                 ''
             )
 
+    @handle_errors
     def do_POST(self):
         try:
             self.send_response(200, 'ok')
@@ -62,12 +76,10 @@ class Handler(BaseHTTPRequestHandler):
                 str(self.path),
                 str(body)
             )
-            self.wfile.write(str(body))
-            self.wfile.close()
         except:
             self.send_response(500)
         
-
+    @handle_errors
     def do_OPTIONS(self):
         self.send_response(200, 'ok')
 

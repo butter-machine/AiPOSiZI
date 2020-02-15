@@ -24,6 +24,10 @@ class Logger:
         self.port = 0
         logging.info(message)
 
+    def log_error(self, message: str):
+        logging.info(message)
+        print(message)
+
     def log_response(self, request_type: str, response_code: str,
                     headers: str, path: str, content: str):
         headers = headers.replace('\n', ' ')
